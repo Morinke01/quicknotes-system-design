@@ -63,7 +63,8 @@ async function request(url, options = {}) {
     error.status = response.status;
     throw error;
   }
-  return response.status === 204 ? null : response.json();
+  const data = response.status === 204 ? null : await response.json();
+  return { data, status: response.status };
 }
 
 async function loadNotes() {
@@ -71,7 +72,7 @@ async function loadNotes() {
   setButtonsBusy(true);
   setStatus('Loading notes...', 'loading');
   try {
-    const notes = await request(`${API_URL}?_limit=10`);
+    const { data: notes } = await request(`${API_URL}?_limit=10`);
     renderNotes(notes);
     if (notes.length === 0) {
       setStatus('The server has no notes yet.', 'info');
@@ -111,7 +112,7 @@ async function createNote(event) {
   setButtonsBusy(true);
   setStatus('Creating note...', 'loading');
   try {
-    const createdNote = await request(API_URL, {
+    const { data: createdNote, status } = await request(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json; charset=UTF-8' },
       body: JSON.stringify({ title, body, userId: 1 }),
@@ -119,7 +120,7 @@ async function createNote(event) {
     notesList.querySelector('.empty-state')?.remove();
     notesList.prepend(createNoteCard(createdNote));
     noteForm.reset();
-    setStatus(`Note created (status 201, id ${createdNote.id}).`, 'success');
+    setStatus(`Note created (status ${status}, id ${createdNote.id}).`, 'success');
   } catch (error) {
     setStatus('Sorry, your note could not be created. Please try again.', 'error');
     console.error('POST note failed:', error);
