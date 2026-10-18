@@ -35,6 +35,8 @@ h1 { margin-bottom: .7rem; font-size: clamp(2.2rem, 6vw, 3.5rem); letter-spacing
 .button-primary:hover:not(:disabled) { background: #115d46; }
 .button-secondary { color: #155942; background: #e3f4ed; }
 .button-secondary:hover:not(:disabled) { background: #d1eddf; }
+.button-delete { min-height: 2.25rem; justify-self: start; margin-top: .85rem; padding: .5rem .8rem; color: #a3333b; background: #fff0f0; font-size: .85rem; }
+.button-delete:hover:not(:disabled) { background: #ffe0e1; }
 .status { min-height: 1.5rem; margin: 1.25rem 0; color: #5b6d77; font-size: .95rem; }
 .status-loading { color: #705515; }
 .status-success { color: #14734c; font-weight: 700; }

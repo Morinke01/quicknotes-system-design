@@ -46,7 +46,13 @@ function createNoteCard(note) {
   title.textContent = note.title;
   const body = document.createElement('p');
   body.textContent = note.body || '';
-  item.append(title, body);
+  const deleteButton = document.createElement('button');
+  deleteButton.className = 'button button-delete';
+  deleteButton.type = 'button';
+  deleteButton.textContent = 'Delete';
+  deleteButton.setAttribute('aria-label', `Delete note: ${note.title}`);
+  deleteButton.addEventListener('click', () => deleteNote(note.id, item));
+  item.append(title, body, deleteButton);
   return item;
 }
 
@@ -117,6 +123,27 @@ async function createNote(event) {
   } catch (error) {
     setStatus('Sorry, your note could not be created. Please try again.', 'error');
     console.error('POST note failed:', error);
+  } finally {
+    activeRequests -= 1;
+    setButtonsBusy(activeRequests > 0);
+  }
+}
+
+async function deleteNote(noteId, noteElement) {
+  activeRequests += 1;
+  setButtonsBusy(true);
+  setStatus('Deleting note...', 'loading');
+  try {
+    await request(`${API_URL}/${encodeURIComponent(noteId)}`, { method: 'DELETE' });
+    // JSONPlaceholder simulates DELETE but does not persist changes; remove it locally for this session.
+    noteElement.remove();
+    if (notesList.querySelectorAll('.note-card').length === 0) {
+      renderEmptyState();
+    }
+    setStatus(`Note ${noteId} deleted.`, 'success');
+  } catch (error) {
+    setStatus('Sorry, that note could not be deleted. Please try again.', 'error');
+    console.error('DELETE note failed:', error);
   } finally {
     activeRequests -= 1;
     setButtonsBusy(activeRequests > 0);
