@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A small notes client backed by the JSONPlaceholder practice API.">
+    <title>QuickNotes API client</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="api.js" defer></script>
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="page-header">
+        <p class="eyebrow">QuickNotes · API practice</p>
+        <h1>Your notes, online</h1>
+        <p class="intro">Load sample notes from a practice API, then create and delete notes.</p>
+      </header>
+
+      <section class="panel" aria-labelledby="notes-heading">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Your workspace</p>
+            <h2 id="notes-heading">Notes</h2>
+          </div>
+          <button class="button button-secondary" id="load-btn" type="button">Load notes</button>
+        </div>
+        <p id="status" class="status" role="status" aria-live="polite">Load notes to get started.</p>
+
+        <form id="note-form" class="note-form" novalidate>
+          <div class="field">
+            <label for="title-input">Title <span aria-hidden="true">*</span></label>
+            <input id="title-input" name="title" type="text" maxlength="100" required autocomplete="off" placeholder="A short note title">
+            <small>Required · 100 characters maximum</small>
+          </div>
+          <div class="field">
+            <label for="body-input">Note</label>
+            <textarea id="body-input" name="body" rows="4" placeholder="Write something worth remembering"></textarea>
+          </div>
+          <button class="button button-primary" id="submit-btn" type="submit">Create note</button>
+        </form>
+
+        <ul id="notes-list" class="notes-list" aria-label="Notes"></ul>
+      </section>
+    </main>
+  </body>
+</html>
