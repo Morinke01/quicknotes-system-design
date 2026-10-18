@@ -1,8 +1,19 @@
 const API_URL = 'https://jsonplaceholder.typicode.com/posts';
 
 const loadButton = document.querySelector('#load-btn');
+const noteForm = document.querySelector('#note-form');
+const titleInput = document.querySelector('#title-input');
+const bodyInput = document.querySelector('#body-input');
+const submitButton = document.querySelector('#submit-btn');
 const statusMessage = document.querySelector('#status');
 const notesList = document.querySelector('#notes-list');
+let activeRequests = 0;
+
+function setButtonsBusy(isBusy) {
+  document.querySelectorAll('button').forEach((button) => {
+    button.disabled = isBusy;
+  });
+}
 
 function setStatus(message, kind = 'info') {
   statusMessage.textContent = message;
@@ -24,15 +35,19 @@ function renderNotes(notes) {
   }
 
   for (const note of notes) {
-    const item = document.createElement('li');
-    item.className = 'note-card';
-    const title = document.createElement('h3');
-    title.textContent = note.title;
-    const body = document.createElement('p');
-    body.textContent = note.body;
-    item.append(title, body);
-    notesList.append(item);
+    notesList.append(createNoteCard(note));
   }
+}
+
+function createNoteCard(note) {
+  const item = document.createElement('li');
+  item.className = 'note-card';
+  const title = document.createElement('h3');
+  title.textContent = note.title;
+  const body = document.createElement('p');
+  body.textContent = note.body || '';
+  item.append(title, body);
+  return item;
 }
 
 async function request(url, options = {}) {
@@ -46,7 +61,8 @@ async function request(url, options = {}) {
 }
 
 async function loadNotes() {
-  loadButton.disabled = true;
+  activeRequests += 1;
+  setButtonsBusy(true);
   setStatus('Loading notes...', 'loading');
   try {
     const notes = await request(`${API_URL}?_limit=10`);
@@ -61,8 +77,51 @@ async function loadNotes() {
     renderEmptyState();
     console.error('GET notes failed:', error);
   } finally {
-    loadButton.disabled = false;
+    activeRequests -= 1;
+    setButtonsBusy(activeRequests > 0);
+  }
+}
+
+async function createNote(event) {
+  event.preventDefault();
+  const title = titleInput.value.trim();
+  const body = bodyInput.value.trim();
+
+  if (!title) {
+    titleInput.setCustomValidity('Please enter a title.');
+    titleInput.reportValidity();
+    titleInput.setCustomValidity('');
+    setStatus('A title is required.', 'error');
+    titleInput.focus();
+    return;
+  }
+  if (title.length > 100) {
+    setStatus('The title must be 100 characters or fewer.', 'error');
+    titleInput.focus();
+    return;
+  }
+
+  activeRequests += 1;
+  setButtonsBusy(true);
+  setStatus('Creating note...', 'loading');
+  try {
+    const createdNote = await request(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+      body: JSON.stringify({ title, body, userId: 1 }),
+    });
+    notesList.querySelector('.empty-state')?.remove();
+    notesList.prepend(createNoteCard(createdNote));
+    noteForm.reset();
+    setStatus(`Note created (status 201, id ${createdNote.id}).`, 'success');
+  } catch (error) {
+    setStatus('Sorry, your note could not be created. Please try again.', 'error');
+    console.error('POST note failed:', error);
+  } finally {
+    activeRequests -= 1;
+    setButtonsBusy(activeRequests > 0);
   }
 }
 
 loadButton.addEventListener('click', loadNotes);
+noteForm.addEventListener('submit', createNote);
